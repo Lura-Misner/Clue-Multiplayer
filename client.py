@@ -2,6 +2,7 @@ import constants
 import pygame
 import random
 import time
+import sys
 from board import Board
 from characters import Characters
 from deck import Deck
@@ -14,6 +15,7 @@ class Client:
     def __init__(self, window):
         self.WIN = window
         self.n = Network()
+        self.clock = pygame.time.Clock()
         self.log = []
         self.player_positions = {}
 
@@ -26,6 +28,9 @@ class Client:
         self.weapons_group = pygame.sprite.Group()
         self.rooms_group = pygame.sprite.Group()
         self.characters_group = pygame.sprite.Group()
+        self.start_screen = pygame.sprite.Group()
+
+        self.image_setups()
 
     # noinspection PyTypeChecker
     def image_setups(self):
@@ -59,12 +64,22 @@ class Client:
         self.rooms_group.add(Picture(475, 450, 'images/room-buttons/library.png'))
         self.rooms_group.add(Picture(25, 500, 'images/room-buttons/study.png'))
 
-    def ask_server(self, request):
+        # Start screen
+        self.start_screen.add(Picture(67.5, 10, 'images/start-screen/col_mustard.png'))
+        self.start_screen.add(Picture(364.5, 10, 'images/start-screen/mr_green.png'))
+        self.start_screen.add(Picture(659.5, 10, 'images/start-screen/mrs_peacock.png'))
+        self.start_screen.add(Picture(67.5, 320, 'images/start-screen/mrs_white.png'))
+        self.start_screen.add(Picture(364.5, 320, 'images/start-screen/miss_scarlet.png'))
+        self.start_screen.add(Picture(659.5, 320, 'images/start-screen/prof_plum.png'))
+        self.start_screen.add(Picture(425, 700, 'images/start-screen/confirm_button.png'))
+
+
+    def ask_server(self, query):
         """
         Asks the server a request
         :return: Servers response
         """
-        return self.n.send(request)
+        return self.n.send(query)
 
     def check_our_turn(self) -> bool:
         """
@@ -121,114 +136,115 @@ class Client:
         """
         self.ask_server(f'update_position {position}')
 
-    # This section contains functions that are used for the pre-game character selection screen
-    def show_ready(self):
+    # TODO: Test and figure out what to do with selected
+    def draw_start(self, character):
         """
-        Creates a waiting screen for players in the game that have finished selecting their character
+        Draws out the start screen
+        :param character: Character object representing selected item
         """
-        # Show how many players are ready
-        self.WIN.fill(constants.BACKGROUND)
-        num_ready = self.ask_server('num_ready')
-        font = pygame.font.SysFont('freesansbold.ttf', 56)
-        self.WIN.blit(font.render(f'Waiting on other players...', True, (0, 0, 0)), (275, 200))
-        self.WIN.blit(font.render(f'{num_ready[1]} out of {num_ready[0]} players ready', True,
-                                  constants.BLACK), (275, 275))
 
+        # Color in the background and add the character portraits
+        self.WIN.fill(constants.BACKGROUND)
+        self.start_screen.draw(self.WIN)
+        self.draw_number_ready(24, constants.BLACK, 410, 680)
+
+
+        # If a character is no longer available, grey out their portrait
+        available_characters = self.ask_server('character_selection')
+        if Characters.COLONEL_MUSTARD not in available_characters:
+            self.draw_transparent_box(67.5, 10, constants.PORTRAIT_WIDTH,constants.PORTRAIT_HEIGHT, 180)
+
+        if Characters.REVEREND_GREEN not in available_characters:
+            self.draw_transparent_box(364.5,10,constants.PORTRAIT_WIDTH,constants.PORTRAIT_HEIGHT, 180)
+
+        if Characters.MRS_PEACOCK not in available_characters:
+            self.draw_transparent_box(659.5, 10,constants.PORTRAIT_WIDTH,constants.PORTRAIT_HEIGHT, 180)
+
+        if Characters.MRS_WHITE not in available_characters:
+            self.draw_transparent_box(67.5,320,constants.PORTRAIT_WIDTH,constants.PORTRAIT_HEIGHT, 180)
+
+        if Characters.MISS_SCARLET not in available_characters:
+            self.draw_transparent_box(364.5, 320, constants.PORTRAIT_WIDTH,constants.PORTRAIT_HEIGHT, 180)
+
+        if Characters.PROFESSOR_PLUM not in available_characters:
+            self.draw_transparent_box(659.5, 320, constants.PORTRAIT_WIDTH,constants.PORTRAIT_HEIGHT, 180)
+
+
+
+        # TODO: Visual for the character selected
+
+        pygame.display.update()
+
+    # TODO: Test all this
     def select_character(self):
         """
-        Draws the character selection screen and allows the player to select what character they want to be
+        Draws the character select screen and lets the player select a color to be. Updates it on the server side
         """
-        selection_made = False
+        selected = False
         choice = None
 
-        while not selection_made:
-            available_characters = self.ask_server('character_selection')
-            self.WIN.fill(constants.BACKGROUND)
+        while not selected:
+            self.draw_start(choice)
 
-            # How many players ready
-            num_ready = self.ask_server('num_ready')
-            self.draw_text(f'{num_ready[1]} out of {num_ready[0]} players ready', 26, constants.BLACK, 50, 50)
+            # Look for a selection
+            event = pygame.event.get()
+            for ev in event:
+                if ev.type == pygame.MOUSEBUTTONUP:
+                    x, y = pygame.mouse.get_pos()
 
-            # Fonts
-            font2 = pygame.font.SysFont('freesansbold.ttf', 26)
-            self.draw_text('Select a Character', 60, constants.BLACK, 300, 200)
+                    if 425 <= x <= 575 and 700 <= y <= 735:
+                        if choice:
+                            selected = True
+                    elif 67.5 <= x <= 342.5 and 10 <= y <= 310:
+                        choice = Characters.COLONEL_MUSTARD
+                    elif 364.5 <= x <= 639.5 and 10 <= y <= 310:
+                        choice = Characters.REVEREND_GREEN
+                    elif 659.5 <= x <= 934.5 and 10 <= y <= 310:
+                        choice = Characters.MRS_PEACOCK
+                    elif 67.5 <= x <= 342.5 and 320 <= y <= 620:
+                        choice = Characters.MRS_WHITE
+                    elif 364.5 <= x <= 639.5 and 320 <= y <= 620:
+                        choice = Characters.MISS_SCARLET
+                    elif 659.5 <= x <= 934.5 and 320 <= y <= 620:
+                        choice = Characters.PROFESSOR_PLUM
 
-            mapping = {}
-            # Character options
-            for i, ch in enumerate(available_characters):
-                x = 75 + i * 150
-                y = 300
-                mapping[ch] = (x, y)
+                if ev.type == pygame.QUIT:
+                    self.ask_server('quit_start_no_choice')
+                    sys.exit()
 
-                if ch == Characters.COLONEL_MUSTARD:
-                    color = constants.MUSTARD
-                    text1 = 'Colonel'
-                    text2 = 'Mustard'
-                elif ch == Characters.MISS_SCARLET:
-                    color = constants.SCARLET
-                    text1 = 'Miss'
-                    text2 = 'Scarlet'
-                elif ch == Characters.MRS_PEACOCK:
-                    color = constants.PEACOCK
-                    text1 = 'Mrs.'
-                    text2 = 'Peacock'
-                elif ch == Characters.MRS_WHITE:
-                    color = constants.WHITE
-                    text1 = 'Mrs.'
-                    text2 = 'White'
-                elif ch == Characters.PROFESSOR_PLUM:
-                    color = constants.PLUM
-                    text1 = 'Professor'
-                    text2 = 'Plum'
-                else:
-                    # Reverend Green
-                    color = constants.GREEN
-                    text1 = 'Reverend'
-                    text2 = 'Green'
-
-                self.draw_box(x, y, constants.CHARACTER_SELECTION_SIZE, constants.CHARACTER_SELECTION_SIZE, color)
-                self.WIN.blit(font2.render(f'{text1}', True, constants.BLACK), (x + 25 - (1.5 * len(text1)), 330))
-                self.WIN.blit(font2.render(f'{text2}', True, constants.BLACK), (x + 25 - (1.5 * len(text2)), 355))
-
-            # Listen for clicks
-            ev = pygame.event.get()
-            for event in ev:
-                if event.type == pygame.MOUSEBUTTONUP:
-                    pos = pygame.mouse.get_pos()
-
-                    # Find out if the click maps to a character
-                    for key in mapping.keys():
-                        x, y = pos
-                        x2, y2 = mapping[key]
-
-                        if x2 < x < x2 + constants.CHARACTER_SELECTION_SIZE and \
-                                y2 < y < y2 + constants.CHARACTER_SELECTION_SIZE:
-                            choice = key
-
-                    # Check if it is the confirmation button
-                    if choice:
-                        # Clicking confirmed
-                        x, y = pos
-                        if 425 <= x <= 425 + 125 and 600 <= y <= 600 + 65:
-                            selection_made = True
-
-            # Selection update
-            self.draw_text('Character Selected: ', 32, constants.BLACK, 300, 500)
-
-            # If a choice has been made, add a confirmation button to create the player
-            if choice:
-                self.draw_text(choice.value, 32, constants.BLACK, 550, 500)
-
-            # Button to confirm selection (will confirm the selection made if choice != None
-            self.draw_box(425, 600, 125, 65, constants.GREEN)
-            self.draw_text('Confirm', 32, constants.BLACK, 442, 622)
             pygame.display.update()
+            self.clock.tick(60)
 
-        # Verify the choice is okay, if not then restart this process
-        if self.ask_server(choice.value):
-            self.character = choice
+        # Verify the selection with the server, if not verified recall the function
+        verified = self.ask_server(f'{choice.value}')
+        if not verified:
+            return self.select_character()
         else:
-            self.select_character()
+            self.character = choice
+            return self.wait_for_start()
+
+
+    # TODO: Test and make sure it works properly
+    def wait_for_start(self):
+        """
+        Function for updating the screen waiting for all players to be ready (after this player is ready)
+        """
+        start = self.ask_server('start')
+
+        while not start:
+            self.draw_start(self.character)
+            self.draw_number_ready(24, constants.BLACK, 410, 680)
+
+            event = pygame.event.get()
+            for ev in event:
+                if ev.type == pygame.QUIT:
+                    self.ask_server('quit_start_choice')
+                    sys.exit()
+
+            pygame.display.update()
+            self.clock.tick(60)
+
+            start = self.ask_server('start')
 
     # Section below handles screen visuals
     def draw_box(self, x, y, x_length, y_length, color):
@@ -246,6 +262,19 @@ class Client:
         rect = pygame.Rect(x + 2, y + 2, x_length - 4, y_length - 4)
         pygame.draw.rect(self.WIN, color, rect)
 
+    def draw_transparent_box(self, x, y, width, height, al):
+        """
+        Draws a transparent box, used to highlight locations
+        :param x: Integer top-left x position
+        :param y: Integer top-left y position
+        :param width: Integer
+        :param height: Integer
+        :param al: Integer to determine the alpha number
+        """
+        s = pygame.Surface((width, height), pygame.SRCALPHA)
+        s.fill((0, 0, 0, al))
+        self.WIN.blit(s, (x, y))
+
     def draw_text(self, text, size, color, x, y):
         """
         Draws a text object on the window
@@ -257,6 +286,18 @@ class Client:
         """
         font = pygame.font.SysFont('freesansbold.ttf', size)
         self.WIN.blit(font.render(text, True, color), (x, y))
+
+    def draw_number_ready(self, size, color, x, y):
+        """
+        Displays the number of players ready
+        :param size: Integer, size of the text
+        :param color: (int, int, int), rgb color of the text
+        :param x: Integer, x position of top left corner
+        :param y: Integer, y position of top left corner
+        """
+        rdy = self.ask_server('num_ready')
+        self.draw_text(f'{rdy[1]} / {rdy[0]} players ready', size, color, x, y)
+
 
     def draw_screen(self):
         """

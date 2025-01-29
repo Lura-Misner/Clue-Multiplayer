@@ -52,14 +52,14 @@ def main():
         print("Please start the server")
         sys.exit()
 
-    client.image_setups()
-
     # How to wait for the start
-    ready = False
-    while not ready:
-        client.show_ready()
-        pygame.display.update()
-        ready = client.n.send('start')
+    #client.wait_for_start()
+
+    #ready = False
+    #while not ready:
+        #client.show_ready()
+        #pygame.display.update()
+        #ready = client.n.send('start')
 
     print("Starting game...")
 
