@@ -65,13 +65,14 @@ class Client:
         self.rooms_group.add(Picture(25, 500, 'images/room-buttons/study.png'))
 
         # Start screen
-        self.start_screen.add(Picture(67.5, 10, 'images/start-screen/col_mustard.png'))
-        self.start_screen.add(Picture(364.5, 10, 'images/start-screen/mr_green.png'))
-        self.start_screen.add(Picture(659.5, 10, 'images/start-screen/mrs_peacock.png'))
-        self.start_screen.add(Picture(67.5, 320, 'images/start-screen/mrs_white.png'))
-        self.start_screen.add(Picture(364.5, 320, 'images/start-screen/miss_scarlet.png'))
-        self.start_screen.add(Picture(659.5, 320, 'images/start-screen/prof_plum.png'))
-        self.start_screen.add(Picture(425, 700, 'images/start-screen/confirm_button.png'))
+        self.start_screen.add(Picture(351, 3, 'images/start-screen/select_white.png'))
+        self.start_screen.add(Picture(67.5, 50, 'images/start-screen/col_mustard.png'))
+        self.start_screen.add(Picture(364.5, 50, 'images/start-screen/mr_green.png'))
+        self.start_screen.add(Picture(659.5, 50, 'images/start-screen/mrs_peacock.png'))
+        self.start_screen.add(Picture(67.5, 360, 'images/start-screen/mrs_white.png'))
+        self.start_screen.add(Picture(364.5, 360, 'images/start-screen/miss_scarlet.png'))
+        self.start_screen.add(Picture(659.5, 360, 'images/start-screen/prof_plum.png'))
+        self.start_screen.add(Picture(425, 700, 'images/start-screen/grey_white.png'))
 
 
     def ask_server(self, query):
@@ -144,45 +145,45 @@ class Client:
         """
 
         # Color in the background and add the character portraits
-        self.WIN.fill(constants.BACKGROUND)
+        self.WIN.fill(constants.BLACK)
 
         # Visual for the character selected, makes a green box around the portrait
         if character == Characters.COLONEL_MUSTARD:
-            self.draw_highlight(63.5, 5, constants.PORTRAIT_WIDTH + 10, constants.PORTRAIT_HEIGHT + 10, 180)
+            self.draw_highlight(63.5, 45, constants.PORTRAIT_WIDTH + 10, constants.PORTRAIT_HEIGHT + 10, 180)
         elif character == Characters.REVEREND_GREEN:
-            self.draw_highlight(360.5, 5, constants.PORTRAIT_WIDTH + 10, constants.PORTRAIT_HEIGHT + 10, 180)
+            self.draw_highlight(360.5, 45, constants.PORTRAIT_WIDTH + 10, constants.PORTRAIT_HEIGHT + 10, 180)
         elif character == Characters.MRS_PEACOCK:
-            self.draw_highlight(655.5, 5, constants.PORTRAIT_WIDTH + 10, constants.PORTRAIT_HEIGHT + 10, 180)
+            self.draw_highlight(655.5, 45, constants.PORTRAIT_WIDTH + 10, constants.PORTRAIT_HEIGHT + 10, 180)
         elif character == Characters.MRS_WHITE:
-            self.draw_highlight(63.5, 315, constants.PORTRAIT_WIDTH + 10, constants.PORTRAIT_HEIGHT + 10, 180)
+            self.draw_highlight(63.5, 355, constants.PORTRAIT_WIDTH + 10, constants.PORTRAIT_HEIGHT + 10, 180)
         elif character == Characters.MISS_SCARLET:
-            self.draw_highlight(360.5, 315, constants.PORTRAIT_WIDTH + 10, constants.PORTRAIT_HEIGHT + 10, 180)
+            self.draw_highlight(360.5, 355, constants.PORTRAIT_WIDTH + 10, constants.PORTRAIT_HEIGHT + 10, 180)
         elif character == Characters.PROFESSOR_PLUM:
-            self.draw_highlight(655.5, 315, constants.PORTRAIT_WIDTH + 10, constants.PORTRAIT_HEIGHT + 10, 180)
+            self.draw_highlight(655.5, 355, constants.PORTRAIT_WIDTH + 10, constants.PORTRAIT_HEIGHT + 10, 180)
 
         self.start_screen.draw(self.WIN)
-        self.draw_number_ready(24, constants.BLACK, 430, 680)
+        self.draw_number_ready(24, constants.WHITE, 430, 680)
 
 
         # If a character is no longer available, grey out their portrait
         available_characters = self.ask_server('character_selection')
         if Characters.COLONEL_MUSTARD not in available_characters:
-            self.draw_transparent_box(67.5, 10, constants.PORTRAIT_WIDTH, constants.PORTRAIT_HEIGHT,180)
+            self.draw_transparent_box(67.5, 50, constants.PORTRAIT_WIDTH, constants.PORTRAIT_HEIGHT,180)
 
         if Characters.REVEREND_GREEN not in available_characters:
-            self.draw_transparent_box(364.5,10, constants.PORTRAIT_WIDTH, constants.PORTRAIT_HEIGHT,180)
+            self.draw_transparent_box(364.5,50, constants.PORTRAIT_WIDTH, constants.PORTRAIT_HEIGHT,180)
 
         if Characters.MRS_PEACOCK not in available_characters:
-            self.draw_transparent_box(659.5, 10, constants.PORTRAIT_WIDTH, constants.PORTRAIT_HEIGHT,180)
+            self.draw_transparent_box(659.5, 50, constants.PORTRAIT_WIDTH, constants.PORTRAIT_HEIGHT,180)
 
         if Characters.MRS_WHITE not in available_characters:
-            self.draw_transparent_box(67.5,320, constants.PORTRAIT_WIDTH, constants.PORTRAIT_HEIGHT,180)
+            self.draw_transparent_box(67.5,360, constants.PORTRAIT_WIDTH, constants.PORTRAIT_HEIGHT,180)
 
         if Characters.MISS_SCARLET not in available_characters:
-            self.draw_transparent_box(364.5, 320, constants.PORTRAIT_WIDTH, constants.PORTRAIT_HEIGHT,180)
+            self.draw_transparent_box(364.5, 360, constants.PORTRAIT_WIDTH, constants.PORTRAIT_HEIGHT,180)
 
         if Characters.PROFESSOR_PLUM not in available_characters:
-            self.draw_transparent_box(659.5, 320, constants.PORTRAIT_WIDTH, constants.PORTRAIT_HEIGHT,180)
+            self.draw_transparent_box(659.5, 360, constants.PORTRAIT_WIDTH, constants.PORTRAIT_HEIGHT,180)
 
         pygame.display.update()
 
@@ -197,6 +198,18 @@ class Client:
         while not selected:
             self.draw_start(choice)
 
+            # If there is a choice selected, turn the confirm button green
+            if choice:
+                for img in self.start_screen:
+                    if img.get_path() == 'images/start-screen/grey_white.png':
+                        img.change_path('images/start-screen/confirm_white.png')
+            else:
+                # If a player tries to select a character that is already taken, grey the confirm button back out
+                for img in self.start_screen:
+                    if img.get_path() == 'images/start-screen/confirm_white.png':
+                        img.change_path('images/start-screen/grey_white.png')
+
+
             # Look for a selection
             event = pygame.event.get()
             for ev in event:
@@ -206,17 +219,17 @@ class Client:
                     if 425 <= x <= 575 and 700 <= y <= 735:
                         if choice:
                             selected = True
-                    elif 67.5 <= x <= 342.5 and 10 <= y <= 310:
+                    elif 67.5 <= x <= 342.5 and 50 <= y <= 350:
                         choice = Characters.COLONEL_MUSTARD
-                    elif 364.5 <= x <= 639.5 and 10 <= y <= 310:
+                    elif 364.5 <= x <= 639.5 and 50 <= y <= 350:
                         choice = Characters.REVEREND_GREEN
-                    elif 659.5 <= x <= 934.5 and 10 <= y <= 310:
+                    elif 659.5 <= x <= 934.5 and 50 <= y <= 350:
                         choice = Characters.MRS_PEACOCK
-                    elif 67.5 <= x <= 342.5 and 320 <= y <= 620:
+                    elif 67.5 <= x <= 342.5 and 360 <= y <= 660:
                         choice = Characters.MRS_WHITE
-                    elif 364.5 <= x <= 639.5 and 320 <= y <= 620:
+                    elif 364.5 <= x <= 639.5 and 360 <= y <= 660:
                         choice = Characters.MISS_SCARLET
-                    elif 659.5 <= x <= 934.5 and 320 <= y <= 620:
+                    elif 659.5 <= x <= 934.5 and 360 <= y <= 660:
                         choice = Characters.PROFESSOR_PLUM
 
                 if ev.type == pygame.QUIT:
@@ -235,8 +248,8 @@ class Client:
 
             # If the player has locked in a character, grey out the confirm button
             for img in self.start_screen:
-                if img.get_path() == 'images/start-screen/confirm_button.png':
-                    img.change_path('images/start-screen/confirm_grey.png')
+                if img.get_path() == 'images/start-screen/confirm_white.png':
+                    img.change_path('images/start-screen/grey_white.png')
 
             return self.wait_for_start()
 
@@ -249,7 +262,7 @@ class Client:
 
         while not start:
             self.draw_start(self.character)
-            self.draw_number_ready(24, constants.BLACK, 430, 680)
+            self.draw_number_ready(24, constants.WHITE, 430, 680)
 
             event = pygame.event.get()
             for ev in event:
