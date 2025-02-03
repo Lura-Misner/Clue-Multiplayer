@@ -308,6 +308,7 @@ class Game:
         if self.won:
             return self.who_won
 
+    # TODO: Test the changes in this function
     def early_quit(self, player):
         """
         If a player quits early, remove them from the players and split their cards between the remaining players
@@ -321,18 +322,22 @@ class Game:
                 quitter = p
                 index = ind
 
+                # Add back to available characters, to handle quitting in character start menu
+                self.available_characters.append(p)
+
         if quitter:
-            # Remove them from the list of players, and give other players their cards
+            # Remove them from the list of players
             self.players.pop(index)
             self.player_count -= 1
 
-            players_cards = quitter.get_cards()
-
-            if self.player_count > 0:
-                i = 0
-                while players_cards:
-                    self.players[i % len(self.players)].add_card(players_cards.pop())
-                    i += 1
+            # If cards have been distributed, split them between the remaining players
+            if self.split:
+                players_cards = quitter.get_cards()
+                if self.player_count > 0:
+                    i = 0
+                    while players_cards:
+                        self.players[i % len(self.players)].add_card(players_cards.pop())
+                        i += 1
 
     def get_envelope(self):
         """

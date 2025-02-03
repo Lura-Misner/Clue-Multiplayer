@@ -223,23 +223,14 @@ def threaded_client(connect, p, gameid):
                     elif data == 'get_log':
                         reply = get_player_log(gameid, character)
 
-
-                    # TODO: Probably sum this into one quit
+                    # TODO: Test this
+                    # Handles player leaving game
                     elif data =='quit':
-                        pass
+                        if character:
+                            game.early_quit(character)
+                            add_to_all_logs(gameid, f'{character} has been disconnected. Cards distributed')
 
-                    # Handles players closing the game early
-                    elif data == 'early_quit':
-                        game.early_quit(character)
-
-                        add_to_all_logs(gameid, f'{character} has been disconnected. Cards distributed')
-
-                    elif data == 'quit_start_no_choice':
-                        # TODO:just quit?
-                        pass
-                    elif data == 'quit_start_choice':
-                        # TODO: Make the character they had selected playable again
-                        pass
+                        del ready[gameid][p]
 
                     connect.sendall(pickle.dumps(reply))
             else:

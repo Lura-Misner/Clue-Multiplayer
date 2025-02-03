@@ -126,7 +126,7 @@ class Client:
 
     def update_player_positions(self):
         """
-        Updates the dicitonary of player positions
+        Updates the dictionary of player positions
         """
         self.player_positions = self.ask_server('get_all_positions')
 
@@ -136,7 +136,7 @@ class Client:
         """
         self.ask_server(f'update_position {position}')
 
-    # TODO: Test and figure out what to do with selected
+
     def draw_start(self, character):
         """
         Draws out the start screen
@@ -145,37 +145,48 @@ class Client:
 
         # Color in the background and add the character portraits
         self.WIN.fill(constants.BACKGROUND)
+
+        # Visual for the character selected, makes a green box around the portrait
+        if character == Characters.COLONEL_MUSTARD:
+            self.draw_highlight(63.5, 5, constants.PORTRAIT_WIDTH + 10, constants.PORTRAIT_HEIGHT + 10, 180)
+        elif character == Characters.REVEREND_GREEN:
+            self.draw_highlight(360.5, 5, constants.PORTRAIT_WIDTH + 10, constants.PORTRAIT_HEIGHT + 10, 180)
+        elif character == Characters.MRS_PEACOCK:
+            self.draw_highlight(655.5, 5, constants.PORTRAIT_WIDTH + 10, constants.PORTRAIT_HEIGHT + 10, 180)
+        elif character == Characters.MRS_WHITE:
+            self.draw_highlight(63.5, 315, constants.PORTRAIT_WIDTH + 10, constants.PORTRAIT_HEIGHT + 10, 180)
+        elif character == Characters.MISS_SCARLET:
+            self.draw_highlight(360.5, 315, constants.PORTRAIT_WIDTH + 10, constants.PORTRAIT_HEIGHT + 10, 180)
+        elif character == Characters.PROFESSOR_PLUM:
+            self.draw_highlight(655.5, 315, constants.PORTRAIT_WIDTH + 10, constants.PORTRAIT_HEIGHT + 10, 180)
+
         self.start_screen.draw(self.WIN)
-        self.draw_number_ready(24, constants.BLACK, 410, 680)
+        self.draw_number_ready(24, constants.BLACK, 430, 680)
 
 
         # If a character is no longer available, grey out their portrait
         available_characters = self.ask_server('character_selection')
         if Characters.COLONEL_MUSTARD not in available_characters:
-            self.draw_transparent_box(67.5, 10, constants.PORTRAIT_WIDTH,constants.PORTRAIT_HEIGHT, 180)
+            self.draw_transparent_box(67.5, 10, constants.PORTRAIT_WIDTH, constants.PORTRAIT_HEIGHT,180)
 
         if Characters.REVEREND_GREEN not in available_characters:
-            self.draw_transparent_box(364.5,10,constants.PORTRAIT_WIDTH,constants.PORTRAIT_HEIGHT, 180)
+            self.draw_transparent_box(364.5,10, constants.PORTRAIT_WIDTH, constants.PORTRAIT_HEIGHT,180)
 
         if Characters.MRS_PEACOCK not in available_characters:
-            self.draw_transparent_box(659.5, 10,constants.PORTRAIT_WIDTH,constants.PORTRAIT_HEIGHT, 180)
+            self.draw_transparent_box(659.5, 10, constants.PORTRAIT_WIDTH, constants.PORTRAIT_HEIGHT,180)
 
         if Characters.MRS_WHITE not in available_characters:
-            self.draw_transparent_box(67.5,320,constants.PORTRAIT_WIDTH,constants.PORTRAIT_HEIGHT, 180)
+            self.draw_transparent_box(67.5,320, constants.PORTRAIT_WIDTH, constants.PORTRAIT_HEIGHT,180)
 
         if Characters.MISS_SCARLET not in available_characters:
-            self.draw_transparent_box(364.5, 320, constants.PORTRAIT_WIDTH,constants.PORTRAIT_HEIGHT, 180)
+            self.draw_transparent_box(364.5, 320, constants.PORTRAIT_WIDTH, constants.PORTRAIT_HEIGHT,180)
 
         if Characters.PROFESSOR_PLUM not in available_characters:
-            self.draw_transparent_box(659.5, 320, constants.PORTRAIT_WIDTH,constants.PORTRAIT_HEIGHT, 180)
-
-
-
-        # TODO: Visual for the character selected
+            self.draw_transparent_box(659.5, 320, constants.PORTRAIT_WIDTH, constants.PORTRAIT_HEIGHT,180)
 
         pygame.display.update()
 
-    # TODO: Test all this
+
     def select_character(self):
         """
         Draws the character select screen and lets the player select a color to be. Updates it on the server side
@@ -209,7 +220,7 @@ class Client:
                         choice = Characters.PROFESSOR_PLUM
 
                 if ev.type == pygame.QUIT:
-                    self.ask_server('quit_start_no_choice')
+                    self.ask_server('quit')
                     sys.exit()
 
             pygame.display.update()
@@ -221,10 +232,15 @@ class Client:
             return self.select_character()
         else:
             self.character = choice
+
+            # If the player has locked in a character, grey out the confirm button
+            for img in self.start_screen:
+                if img.get_path() == 'images/start-screen/confirm_button.png':
+                    img.change_path('images/start-screen/confirm_grey.png')
+
             return self.wait_for_start()
 
 
-    # TODO: Test and make sure it works properly
     def wait_for_start(self):
         """
         Function for updating the screen waiting for all players to be ready (after this player is ready)
@@ -233,12 +249,12 @@ class Client:
 
         while not start:
             self.draw_start(self.character)
-            self.draw_number_ready(24, constants.BLACK, 410, 680)
+            self.draw_number_ready(24, constants.BLACK, 430, 680)
 
             event = pygame.event.get()
             for ev in event:
                 if ev.type == pygame.QUIT:
-                    self.ask_server('quit_start_choice')
+                    self.ask_server('quit')
                     sys.exit()
 
             pygame.display.update()
@@ -272,7 +288,20 @@ class Client:
         :param al: Integer to determine the alpha number
         """
         s = pygame.Surface((width, height), pygame.SRCALPHA)
-        s.fill((0, 0, 0, al))
+        s.fill((0,0,0, al))
+        self.WIN.blit(s, (x, y))
+
+    def draw_highlight(self, x, y, width, height, al):
+        """
+        Draws a transparent box, used to highlight locations
+        :param x: Integer top-left x position
+        :param y: Integer top-left y position
+        :param width: Integer
+        :param height: Integer
+        :param al: Integer to determine the alpha number
+        """
+        s = pygame.Surface((width, height), pygame.SRCALPHA)
+        s.fill((0, 128, 0, al))
         self.WIN.blit(s, (x, y))
 
     def draw_text(self, text, size, color, x, y):

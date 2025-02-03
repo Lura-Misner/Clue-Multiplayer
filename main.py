@@ -104,7 +104,7 @@ def main():
 
         # Check if our player is disqualified from the match
         if not disqualified:
-            disqualified = client.ask_server(f'check_disqualified')
+            disqualified = client.ask_server('check_disqualified')
 
         # If the player has been disqualified, then add information to the screen to inform them
         if disqualified:
@@ -120,7 +120,7 @@ def main():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 # Send a signal to the server that the game is being quit early
-                client.ask_server(f'early_quit')
+                client.ask_server('quit')
                 run = False
 
         # Update the window
