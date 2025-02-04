@@ -31,7 +31,7 @@ class Game:
     def create_envelope(self) -> Envelope:
         """
         Randomly selects three cards (one of each type) from the deck and creates the envelope
-        :return: Envelope object
+        :return:  object containing the character, weapon, and location
         """
         random_character = self.deck.deck.pop(random.randint(0, 5))
         random_weapon = self.deck.deck.pop(random.randint(5, 10))
@@ -308,7 +308,6 @@ class Game:
         if self.won:
             return self.who_won
 
-    # TODO: Test the changes in this function
     def early_quit(self, player):
         """
         If a player quits early, remove them from the players and split their cards between the remaining players
@@ -323,7 +322,7 @@ class Game:
                 index = ind
 
                 # Add back to available characters, to handle quitting in character start menu
-                self.available_characters.append(p)
+                self.available_characters.append(p.get_character())
 
         if quitter:
             # Remove them from the list of players

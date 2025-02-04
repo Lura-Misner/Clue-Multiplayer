@@ -167,6 +167,7 @@ class Client:
 
         # If a character is no longer available, grey out their portrait
         available_characters = self.ask_server('character_selection')
+        print(available_characters)
         if Characters.COLONEL_MUSTARD not in available_characters:
             self.draw_transparent_box(67.5, 50, constants.PORTRAIT_WIDTH, constants.PORTRAIT_HEIGHT,180)
 

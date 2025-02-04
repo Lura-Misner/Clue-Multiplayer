@@ -4,6 +4,8 @@ import pickle
 from _thread import *
 from game import Game
 
+# TODO: Go through and add it so player can quit at any time, and it wont crash
+# TODO: Redo the ui for the game interface
 
 # Running on local host
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -223,7 +225,6 @@ def threaded_client(connect, p, gameid):
                     elif data == 'get_log':
                         reply = get_player_log(gameid, character)
 
-                    # TODO: Test this
                     # Handles player leaving game
                     elif data =='quit':
                         if character:
