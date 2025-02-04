@@ -31,7 +31,7 @@ class Game:
     def create_envelope(self) -> Envelope:
         """
         Randomly selects three cards (one of each type) from the deck and creates the envelope
-        :return: Envelope object
+        :return:  object containing the character, weapon, and location
         """
         random_character = self.deck.deck.pop(random.randint(0, 5))
         random_weapon = self.deck.deck.pop(random.randint(5, 10))
@@ -321,18 +321,22 @@ class Game:
                 quitter = p
                 index = ind
 
+                # Add back to available characters, to handle quitting in character start menu
+                self.available_characters.append(p.get_character())
+
         if quitter:
-            # Remove them from the list of players, and give other players their cards
+            # Remove them from the list of players
             self.players.pop(index)
             self.player_count -= 1
 
-            players_cards = quitter.get_cards()
-
-            if self.player_count > 0:
-                i = 0
-                while players_cards:
-                    self.players[i % len(self.players)].add_card(players_cards.pop())
-                    i += 1
+            # If cards have been distributed, split them between the remaining players
+            if self.split:
+                players_cards = quitter.get_cards()
+                if self.player_count > 0:
+                    i = 0
+                    while players_cards:
+                        self.players[i % len(self.players)].add_card(players_cards.pop())
+                        i += 1
 
     def get_envelope(self):
         """
