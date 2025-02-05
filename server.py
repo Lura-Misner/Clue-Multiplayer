@@ -4,7 +4,6 @@ import pickle
 from _thread import *
 from game import Game
 
-# TODO: Go through and add it so player can quit at any time, and it wont crash
 # TODO: Redo the ui for the game interface
 
 # Running on local host
@@ -258,10 +257,9 @@ while True:
     conn, addr = s.accept()
     print("Connected to: ", addr)
 
-    idCount += 1
-
     # If the game is full or already started, then move to a different game
     if gameId in games:
+        idCount = len(ready[gameId])
         if all(ready[gameId]) or len(ready[gameId]) == 6:
             gameId += 1
 
@@ -275,6 +273,3 @@ while True:
 
     ready[gameId].append(False)
     start_new_thread(threaded_client, (conn, idCount, gameId))
-
-
-## TODO: change so you can exit whenever

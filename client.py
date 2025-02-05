@@ -613,6 +613,10 @@ class Client:
                                 self.update_our_position(entrance)
                                 return
 
+                if event.type == pygame.QUIT:
+                    self.ask_server('quit')
+                    sys.exit()
+
             pygame.display.update()
 
     def draw_buttons(self, room) -> str:
@@ -676,6 +680,10 @@ class Client:
                     elif 630 <= x <= 630 + constants.BUTTON_SIZE_X and \
                             480 + constants.BUTTON_SIZE_Y <= y <= 480 + 2 * constants.BUTTON_SIZE_Y:
                         choice = 'Passage'
+
+                if event.type == pygame.QUIT:
+                    self.ask_server('quit')
+                    sys.exit()
 
             pygame.display.update()
 
@@ -819,6 +827,10 @@ class Client:
                             moves -= 1
                             exiting = False
 
+                if event.type == pygame.QUIT:
+                    self.ask_server('quit')
+                    sys.exit()
+
             # Handle a player entering the room
             if not exiting and Board.is_entrance(self.player_positions[self.character.value]):
                 moves = 0
@@ -930,6 +942,10 @@ class Client:
                     elif 325 <= x <= 325 + constants.SUGGESTION_BUTTONS_X \
                             and 675 <= y <= 675 + constants.SUGGESTION_BUTTONS_Y:
                         run = False
+
+                if event.type == pygame.QUIT:
+                    self.ask_server('quit')
+                    sys.exit()
 
             pygame.display.update()
 
@@ -1054,6 +1070,10 @@ class Client:
                     if 400 <= x <= 400 + 2*constants.BUTTON_SIZE_X and 650 <= y <= 650 + 2*constants.BUTTON_SIZE_Y:
                         if len(related_cards) == 0 or card_choice:
                             confirm = True
+
+                if event.type == pygame.QUIT:
+                    self.ask_server('quit')
+                    sys.exit()
 
             pygame.display.update()
 
@@ -1200,6 +1220,10 @@ class Client:
                             and 675 <= y <= 675 + constants.SUGGESTION_BUTTONS_Y:
                         flag = True
 
+                if event.type == pygame.QUIT:
+                    self.ask_server('quit')
+                    sys.exit()
+
             pygame.display.update()
 
         if flag and confirm:
@@ -1236,6 +1260,10 @@ class Client:
                     elif 655 + constants.BUTTON_SIZE_X <= x <= 655 + 2 * constants.BUTTON_SIZE_X and \
                             455 <= y <= 455 + constants.BUTTON_SIZE_Y:
                         choice = 'Accusation'
+
+                if event.type == pygame.QUIT:
+                    self.ask_server('quit')
+                    sys.exit()
 
             pygame.display.update()
 

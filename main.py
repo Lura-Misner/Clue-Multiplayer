@@ -52,15 +52,6 @@ def main():
         print("Please start the server")
         sys.exit()
 
-    # How to wait for the start
-    #client.wait_for_start()
-
-    #ready = False
-    #while not ready:
-        #client.show_ready()
-        #pygame.display.update()
-        #ready = client.n.send('start')
-
     print("Starting game...")
 
     # Some flags to keep track of if the game is quit early, if the player gets disqualified, and turn number
