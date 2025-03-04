@@ -23,3 +23,6 @@ class Picture(pygame.sprite.Sprite):
     def change_path(self, new_path):
         self.path = new_path
         self.image = pygame.image.load(self.path)
+
+    def collidepoint(self, x, y):
+        return self.rect.collidepoint(x, y)

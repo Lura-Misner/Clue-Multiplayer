@@ -17,6 +17,7 @@ class Client:
         self.n = Network()
         self.clock = pygame.time.Clock()
         self.log = []
+        self.screen = 'game-ui'
         self.player_positions = {}
 
         self.board = Board(self.WIN)
@@ -29,6 +30,10 @@ class Client:
         self.rooms_group = pygame.sprite.Group()
         self.characters_group = pygame.sprite.Group()
         self.start_screen = pygame.sprite.Group()
+        self.notes_group = pygame.sprite.Group()
+        self.game_ui = pygame.sprite.Group()
+        self.notes_extras = pygame.sprite.Group()
+        # TODO: Add notes button to screen
 
         self.image_setups()
 
@@ -73,6 +78,52 @@ class Client:
         self.start_screen.add(Picture(364.5, 360, 'images/start-screen/miss_scarlet.png'))
         self.start_screen.add(Picture(659.5, 360, 'images/start-screen/prof_plum.png'))
         self.start_screen.add(Picture(425, 700, 'images/start-screen/grey_white.png'))
+
+        # Game UI Screen
+        self.game_ui.add(Picture(750,500, 'images/Game-UI/notes_button.png'))
+
+        # Notes - Characters
+        self.notes_group.add(Picture(152,140, 'images/Game-ui/character_title.png'))
+        self.notes_group.add(Picture(130, 175, 'images/Game-ui/mustard_notes.png'))
+        self.notes_group.add(Picture(130, 200, 'images/Game-ui/green_notes.png'))
+        self.notes_group.add(Picture(130, 225, 'images/Game-ui/peacock_notes.png'))
+        self.notes_group.add(Picture(240, 175, 'images/Game-ui/white_notes.png'))
+        self.notes_group.add(Picture(240, 200, 'images/Game-ui/miss_scarlet_notes.png'))
+        self.notes_group.add(Picture(240, 225, 'images/Game-ui/plum_notes.png'))
+
+
+        # Notes - Locations
+        self.notes_group.add(Picture(425, 140, 'images/Game-ui/location_notes.png'))
+        self.notes_group.add(Picture(360, 175, 'images/Game-ui/ballroom_notes.png'))
+        self.notes_group.add(Picture(360, 200, 'images/Game-ui/billiardroom_notes.png'))
+        self.notes_group.add(Picture(360, 225, 'images/Game-ui/conservatory_notes.png'))
+        self.notes_group.add(Picture(460, 175, 'images/Game-ui/dining_notes.png'))
+        self.notes_group.add(Picture(460, 200, 'images/Game-ui/hall_notes.png'))
+        self.notes_group.add(Picture(460, 225, 'images/Game-ui/kitchen_notes.png'))
+        self.notes_group.add(Picture(560, 175, 'images/Game-ui/library_notes.png'))
+        self.notes_group.add(Picture(560, 200, 'images/Game-ui/lounge_notes.png'))
+        self.notes_group.add(Picture(560, 225, 'images/Game-ui/study_notes.png'))
+
+        # Notes - Weapons
+        self.notes_group.add(Picture(672, 140, 'images/Game-ui/weapons_notes.png'))
+        self.notes_group.add(Picture(670, 175, 'images/Game-ui/candle_notes.png'))
+        self.notes_group.add(Picture(670, 200, 'images/Game-ui/knife_notes.png'))
+        self.notes_group.add(Picture(670, 225, 'images/Game-ui/pipe_notes.png'))
+        self.notes_group.add(Picture(770, 175, 'images/Game-ui/revolver_notes.png'))
+        self.notes_group.add(Picture(770, 200, 'images/Game-ui/rope_notes.png'))
+        self.notes_group.add(Picture(770, 225, 'images/Game-ui/wrench_notes.png'))
+
+        # Notes - Extras
+        self.notes_extras.add(Picture(20, 20, 'images/Game-ui/exit_notes.png'))
+        self.notes_extras.add(Picture(650, 20, 'images/Game-ui/changes_description.png'))
+        self.notes_extras.add(Picture(326, 10, 'images/Game-ui/notes_title.png'))
+        self.notes_extras.add(Picture(357, 85, 'images/Game-ui/col_color.png'))
+        self.notes_extras.add(Picture(402, 85, 'images/Game-ui/green_color.png'))
+        self.notes_extras.add(Picture(447, 85, 'images/Game-ui/peacock_color.png'))
+        self.notes_extras.add(Picture(492, 85, 'images/Game-ui/white_color.png'))
+        self.notes_extras.add(Picture(537, 85, 'images/Game-ui/scarlet_color.png'))
+        self.notes_extras.add(Picture(582, 85, 'images/Game-ui/plum_color.png'))
+
 
 
     def ask_server(self, query):
@@ -167,7 +218,6 @@ class Client:
 
         # If a character is no longer available, grey out their portrait
         available_characters = self.ask_server('character_selection')
-        print(available_characters)
         if Characters.COLONEL_MUSTARD not in available_characters:
             self.draw_transparent_box(67.5, 50, constants.PORTRAIT_WIDTH, constants.PORTRAIT_HEIGHT,180)
 
@@ -346,19 +396,54 @@ class Client:
         """
         Used to call all the individual functions that make up the components of the GUI
         """
+        if self.screen == 'game-ui':
+            current_turn = self.ask_server('whos_turn')
+            self.board.draw_board()
+            self.draw_players()
 
-        current_turn = self.ask_server('whos_turn')
-        self.board.draw_board()
-        self.draw_players()
+            self.update_cards()
+            self.draw_cards()
 
-        self.update_cards()
-        self.draw_cards()
+            self.update_notes()
+            self.draw_notes()
 
-        self.update_notes()
-        self.draw_notes()
+            self.draw_turn(current_turn)
+            self.draw_log()
+        else:
+            self.notes_screen()
 
-        self.draw_turn(current_turn)
-        self.draw_log()
+    def notes_screen(self):
+        """
+        Draws note screen, handle adjustments
+        :return:
+        """
+        self.WIN.fill(constants.BACKGROUND)
+        self.notes_group.draw(self.WIN)
+        self.notes_extras.draw(self.WIN)
+        pygame.display.update()
+
+        # Handle events
+        exit_notes = False
+        while not exit_notes:
+            ev = pygame.event.get()
+            for event in ev:
+                if event.type == pygame.MOUSEBUTTONUP:
+                    pos = pygame.mouse.get_pos()
+                    x, y = pos
+
+                    for image in self.notes_extras:
+                        if image.collidepoint(x, y) and image.get_path() == 'images/Game-ui/exit_notes.png':
+                            if self.screen == 'notes-ui':
+                                self.screen = 'game-ui'
+                                exit_notes = True
+
+                if event.type == pygame.QUIT:
+                    self.ask_server('quit')
+                    sys.exit()
+
+        # Returns player to game screen
+        self.draw_screen()
+
 
     def draw_log(self):
         """
@@ -442,6 +527,7 @@ class Client:
             self.draw_text(f"{self.character.value}'s notes", 32, constants.BLACK, 675, 20)
 
         all_cards = Deck.all_values()
+        self.game_ui.draw(self.WIN)
 
         # Characters
         self.draw_text("Potential Murder Suspects", 24, constants.BLACK, 675, 75)
@@ -680,6 +766,15 @@ class Client:
                     elif 630 <= x <= 630 + constants.BUTTON_SIZE_X and \
                             480 + constants.BUTTON_SIZE_Y <= y <= 480 + 2 * constants.BUTTON_SIZE_Y:
                         choice = 'Passage'
+
+                    for image in self.game_ui:
+                        if image.collidepoint(x, y):
+                            if self.screen == 'game-ui':
+                                self.screen = 'notes-ui'
+                                self.draw_screen()
+
+                                # TODO: Test this (seems to work)
+                                return self.draw_buttons(room)
 
                 if event.type == pygame.QUIT:
                     self.ask_server('quit')
@@ -1261,6 +1356,13 @@ class Client:
                             455 <= y <= 455 + constants.BUTTON_SIZE_Y:
                         choice = 'Accusation'
 
+                    # TODO: TEST THIS
+                    for image in self.game_ui:
+                        if image.collidepoint(x, y):
+                            if self.screen == 'game-ui':
+                                self.screen = 'notes-ui'
+                                choice = 'Notes'
+
                 if event.type == pygame.QUIT:
                     self.ask_server('quit')
                     sys.exit()
@@ -1309,6 +1411,9 @@ class Client:
                 status = self.handle_accusation()
                 if status and status == 'Cancelled':
                     return self.handle_turn()
+
+            elif choice == 'Notes':
+                return self.handle_turn()
 
             elif choice == 'Passage':
                 # Set it to the passage of the other room
